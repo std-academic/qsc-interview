@@ -44,6 +44,19 @@
 ### main/
 `main.go`: 作为一个使用例，调用 `core` 进行登录示例。
 
+## Is this working?
+
+简单来说，你需要在 `zjuam` 目录下建立 `account.json`，形如
+```json
+{
+    "username": "1145141919",
+    "password": "7355608"
+}
+```
+然后 `go mod download` 下载库。
+
+可以 `go run main.go` 看一下示例文件的运行，或者 `go test` 跑一下登录的测试。
+
 ## API 文档
 你需要 import `core`
 
