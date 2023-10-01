@@ -102,7 +102,8 @@ func LoginPassword(username string, password string) bool {
 	} else if status != 302 {
 		log.Panicf("密码登录失败：HTTP %d\n%s\n", status, page)
 	} else {
-		log.Printf("密码登录成功！\n重定向到：%s\n", headers["Location"])
+		log.Println("密码登录成功！")
+		log.Printf("重定向到：%s\n", headers["Location"])
 		return true
 	}
 	return false

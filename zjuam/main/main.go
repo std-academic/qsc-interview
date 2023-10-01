@@ -31,7 +31,7 @@ func ServiceOauthExample() {
 	// 为方便起见，我们不是取出 Cookies 然后进行后续操作
 	// 而是直接在 core 的 http 库中进行请求，方便一些
 	// 取出 Cookies 给其他程序用也是可以的，在最后一个 example 里面
-	content, status := core.PostHelper(URL_APIINFO)
+	content, status, _ := core.Post(URL_APIINFO)
 
 	if status != 200 {
 		log.Panicf("获取账号基本信息失败：%d\n%s\n", status, content)

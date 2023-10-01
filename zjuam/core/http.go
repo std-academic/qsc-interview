@@ -137,7 +137,7 @@ func post(endpoint string, data map[string]string) (string, int, http.Header) {
 	return string(body), resp.StatusCode, resp.Header
 }
 
-func PostHelper(url string) (string, int) {
+func Post(url string) (string, int, http.Header) {
 	// 由于我比较懒，不想在 main 里面再次实现一遍 http
 	// 所以开放一个post接口供 example 函数使用
 
@@ -164,7 +164,34 @@ func PostHelper(url string) (string, int) {
 	}
 
 	jar.SetCookies(req.URL, resp.Cookies())
-	return string(body), resp.StatusCode
+	return string(body), resp.StatusCode, resp.Header
+}
+
+func Get(url string) (string, int, http.Header) {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Panicf("创建 GET 请求失败: %s", err.Error())
+	}
+
+	req.Header.Add("User-Agent", USER_AGENT)
+
+	for _, cookie := range jar.Cookies(req.URL) {
+		req.AddCookie(cookie)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Panicf("发送 GET 请求失败: %s", err.Error())
+	}
+
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Panicf("接收 GET 响应失败: %s", err.Error())
+	}
+
+	jar.SetCookies(req.URL, resp.Cookies())
+	return string(body), resp.StatusCode, resp.Header
 }
 
 func GetCookies(site string) map[string]string {
