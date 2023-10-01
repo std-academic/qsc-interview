@@ -3,7 +3,6 @@ package core
 import (
 	"encoding/json"
 	"log"
-	"net/url"
 	"regexp"
 )
 
@@ -66,7 +65,7 @@ func getLoginKey() {
 	}
 }
 
-func LoginPassword(username string, password string) {
+func LoginPassword(username string, password string) bool {
 	// 密码登录
 	getLoginPage()
 	getLoginKey()
@@ -103,13 +102,32 @@ func LoginPassword(username string, password string) {
 	} else if status != 302 {
 		log.Panicf("密码登录失败：HTTP %d\n%s\n", status, page)
 	} else {
-		url, _ := url.Parse(URL_LOGIN)
-		cookies := jar.Cookies(url)
-		s := ""
-		for _, cookie := range cookies {
-			s += cookie.String() + "\n"
-		}
-
-		log.Printf("密码登录成功！\n重定向到：%s\nCookies：%s\n", headers["Location"], s)
+		log.Printf("密码登录成功！\n重定向到：%s\n", headers["Location"])
+		return true
 	}
+	return false
+}
+
+func LoginOAuth(endpoint string) bool {
+	_, status, headers := get(URL_LOGIN, map[string]string{
+		"service": endpoint,
+	})
+
+	if status != 302 {
+		log.Panicf("OAuth 失败：似乎还未登录。(HTTP %d)\n", status)
+	} else {
+		// 我们只需要处理 302 请求传递 ticket
+		// 然后目标网站的 cookies 会加入 jar
+		// 就算做登陆了目标网站
+		var loc string = headers["Location"][0]
+		log.Printf("OAuth 成功：跳转到 %s\n", loc)
+		_, status, headers = get(loc, nil)
+		if status == 302 {
+			// 登录目标网站后如果还需要跳转
+			// 跳转一次确保 Set-Cookies
+			_, _, _ = get(headers["Location"][0], nil)
+		}
+		return true
+	}
+	return false
 }

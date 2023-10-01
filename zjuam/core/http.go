@@ -136,3 +136,53 @@ func post(endpoint string, data map[string]string) (string, int, http.Header) {
 	jar.SetCookies(req.URL, resp.Cookies())
 	return string(body), resp.StatusCode, resp.Header
 }
+
+func PostHelper(url string) (string, int) {
+	// 由于我比较懒，不想在 main 里面再次实现一遍 http
+	// 所以开放一个post接口供 example 函数使用
+
+	req, err := http.NewRequest("POST", url, nil)
+	if err != nil {
+		log.Panicf("创建 POST 请求失败: %s", err.Error())
+	}
+
+	req.Header.Add("User-Agent", USER_AGENT)
+
+	for _, cookie := range jar.Cookies(req.URL) {
+		req.AddCookie(cookie)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Panicf("发送 POST 请求失败: %s", err.Error())
+	}
+
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Panicf("接收 POST 响应失败: %s", err.Error())
+	}
+
+	jar.SetCookies(req.URL, resp.Cookies())
+	return string(body), resp.StatusCode
+}
+
+func GetCookies(site string) map[string]string {
+	// 获取 cookie 信息并返回
+	// 可用于其他程序登录后操作
+	// 如果 site 为 "" 则获取认证系统
+
+	if site == "" {
+		site = URL_LOGIN
+	}
+
+	url, _ := url.Parse(site)
+	cookies := jar.Cookies(url)
+	s := map[string]string{}
+
+	for _, cookie := range cookies {
+		s[cookie.Name] = cookie.Value
+	}
+
+	return s
+}
